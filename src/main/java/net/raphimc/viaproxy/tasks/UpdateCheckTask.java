@@ -48,52 +48,7 @@ public class UpdateCheckTask implements Runnable {
     @Override
     @SuppressWarnings("UnreachableCode")
     public void run() {
-        if (VERSION.startsWith("$")) return; // Dev env check
-        try {
-            URL url = new URL("https://api.github.com/repos/RaphiMC/ViaProxy/releases/latest");
-            HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            con.setRequestMethod("GET");
-            con.setRequestProperty("User-Agent", "ViaProxy/" + VERSION);
-            con.setConnectTimeout(5000);
-            con.setReadTimeout(5000);
-
-            InputStream in = con.getInputStream();
-            byte[] bytes = new byte[1024];
-            int read;
-            StringBuilder builder = new StringBuilder();
-            while ((read = in.read(bytes)) != -1) builder.append(new String(bytes, 0, read));
-            con.disconnect();
-
-            JsonObject object = JsonParser.parseString(builder.toString()).getAsJsonObject();
-            String latestVersion = object.get("tag_name").getAsString().substring(1);
-            boolean updateAvailable;
-            try {
-                Semver versionSemver = new Semver(VERSION);
-                Semver latestVersionSemver = new Semver(latestVersion);
-                updateAvailable = latestVersionSemver.isGreaterThan(versionSemver);
-                if (versionSemver.isGreaterThan(latestVersionSemver)) Logger.LOGGER.warn("You are running a dev version of ViaProxy");
-            } catch (Throwable t) {
-                updateAvailable = !VERSION.equals(latestVersion);
-            }
-            if (updateAvailable) {
-                Logger.LOGGER.warn("You are running an outdated version of ViaProxy! Latest version: " + latestVersion);
-                if (this.hasUI && JarUtil.getJarFile().isPresent()) {
-                    final boolean runsJava8 = System.getProperty("java.version").startsWith("1.8");
-                    JsonArray assets = object.getAsJsonArray("assets");
-                    boolean found = false;
-                    for (JsonElement asset : assets) {
-                        JsonObject assetObject = asset.getAsJsonObject();
-                        if ((this.isMainViaProxyJar(object, assetObject) && !runsJava8) || this.isJava8ViaProxyJar(object, assetObject) && runsJava8) {
-                            found = true;
-                            SwingUtilities.invokeLater(() -> this.showUpdateQuestion(assetObject.get("name").getAsString(), assetObject.get("browser_download_url").getAsString(), latestVersion));
-                            break;
-                        }
-                    }
-                    if (!found) SwingUtilities.invokeLater(() -> this.showUpdateWarning(latestVersion));
-                }
-            }
-        } catch (Throwable ignored) {
-        }
+	    return;
     }
 
     private void showUpdateWarning(final String latestVersion) {
