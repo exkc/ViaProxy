@@ -236,7 +236,7 @@ public class ProxyConnection extends NetClient {
 			CustomMotd="\"description\":\""+ViaProxy.getConfig().getCustomMotd()+"\",";
 		}
 
-            future = this.c2p.writeAndFlush(new S2CStatusResponsePacket("{"+favicon+CustomMotd+"\"players\":{\"max\":10,\"online\":1},\"version\":{\"protocol\":774,\"name\":\"Paper 1.7.2-26.2 :3\"}}"));
+            future = this.c2p.writeAndFlush(new S2CStatusResponsePacket("{"+favicon+CustomMotd+"\"players\":{\"max\":10,\"online\":-9999},\"version\":{\"protocol\":774,\"name\":\"Paper 1.7.2-26.2 :3\"}}"));
         } else if (this.c2pConnectionState == ConnectionState.LOGIN) {
             future = this.c2p.writeAndFlush(new S2CLoginDisconnectPacket(new StringComponent(message)));
         } else if (this.c2pConnectionState == ConnectionState.CONFIGURATION) {
