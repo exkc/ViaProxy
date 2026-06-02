@@ -46,10 +46,12 @@ public class StatusPacketHandler extends PacketHandler {
             listeners.add(ChannelFutureListener.CLOSE);
         } else if (packet instanceof S2CStatusResponsePacket statusResponsePacket && (!ViaProxy.getConfig().getCustomMotd().isBlank() || !ViaProxy.getConfig().getCustomFaviconPath().isBlank())) {
             try {
-                final JsonObject obj = JsonParser.parseString(statusResponsePacket.statusJson).getAsJsonObject();
-                if (!ViaProxy.getConfig().getCustomMotd().isBlank()) {
-                    obj.addProperty("description", ViaProxy.getConfig().getCustomMotd());
-                }
+                final String hackstatus = statusResponsePacket.statusJson;
+                final JsonObject obj = JsonParser.parseString(hackstatus.replace("Paper 1.12.2","Paper 1.7.2-26.2 :3")).getAsJsonObject();
+		// obj.addProperty break \n so dont overwrite
+                //if (!ViaProxy.getConfig().getCustomMotd().isBlank()) {
+                //    obj.addProperty("description", ViaProxy.getConfig().getCustomMotd());
+                //}
                 if (!ViaProxy.getConfig().getCustomFaviconPath().isBlank()) {
                     if (FAVICON_BASE_64 == null) {
                         try {

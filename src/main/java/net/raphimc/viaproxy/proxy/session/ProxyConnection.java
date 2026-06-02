@@ -48,6 +48,11 @@ import java.security.GeneralSecurityException;
 import java.security.Key;
 import java.util.ArrayList;
 import java.util.List;
+import java.io.File;
+import java.nio.file.Files;
+import java.util.Base64;
+import java.util.List;
+
 
 public class ProxyConnection extends NetClient {
 
@@ -69,6 +74,9 @@ public class ProxyConnection extends NetClient {
     private UserConnection userConnection;
     private UserOptions userOptions;
 
+    private static String CustomMotd;
+    private static String favicon;
+    private static byte[] faviconBytes;
     private ConnectionState c2pConnectionState = ConnectionState.HANDSHAKING;
     private ConnectionState p2sConnectionState = ConnectionState.HANDSHAKING;
 
@@ -211,7 +219,24 @@ public class ProxyConnection extends NetClient {
 
         final ChannelFuture future;
         if (this.c2pConnectionState == ConnectionState.STATUS) {
-            future = this.c2p.writeAndFlush(new S2CStatusResponsePacket("{\"players\":{\"max\":0,\"online\":0},\"description\":" + new JsonPrimitive(message) + ",\"version\":{\"protocol\":-1,\"name\":\"ViaProxy\"}}"));
+		try{
+		  faviconBytes = Files.readAllBytes(new File(ViaProxy.getCwd(), ViaProxy.getConfig().getCustomFaviconPath()).toPath());
+				  } catch (Throwable e) {
+                            Logger.LOGGER.error("Failed to load custom favicon from path: " + ViaProxy.getConfig().getCustomFaviconPath(), e);
+                        }
+ if (Base64.getEncoder().encodeToString(faviconBytes).isBlank()) {
+			favicon = "";
+		 } else {
+              favicon = "\"favicon\":\"data:image/png;base64," + Base64.getEncoder().encodeToString(faviconBytes) + "\",";
+		 }
+	
+ 		if (ViaProxy.getConfig().getCustomMotd().isBlank()) {
+			CustomMotd="\"description\":\"\",";
+                }else {
+			CustomMotd="\"description\":\""+ViaProxy.getConfig().getCustomMotd()+"\",";
+		}
+
+            future = this.c2p.writeAndFlush(new S2CStatusResponsePacket("{"+favicon+CustomMotd+"\"players\":{\"max\":10,\"online\":1},\"version\":{\"protocol\":774,\"name\":\"Paper 1.7.2-26.2 :3\"}}"));
         } else if (this.c2pConnectionState == ConnectionState.LOGIN) {
             future = this.c2p.writeAndFlush(new S2CLoginDisconnectPacket(new StringComponent(message)));
         } else if (this.c2pConnectionState == ConnectionState.CONFIGURATION) {
